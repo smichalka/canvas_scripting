@@ -1,118 +1,65 @@
 import requests
-import csv
 import time
 from secret_constants import API_TOKEN, API_URL, COURSE_ID
 
 QUIZ_ID = "2192"  # HW1 Survey
-time_delay = 1
-
-# Headers for authentication
 headers = {"Authorization": f"Bearer {API_TOKEN}"}
 
 
-# Function to get quiz submissions for a specific quiz
-def get_quiz_submissions(course_id, quiz_id):
-    submissions_url = f"{API_URL}/courses/{course_id}/quizzes/{quiz_id}/submissions"
-    response = requests.get(submissions_url, headers=headers)
+def create_quiz_report(course_id, quiz_id, report_type="student_analysis"):
+    """
+    Create a student analysis report on Canvas for a specific quiz
 
-    if response.status_code == 200:
-        return response.json()["quiz_submissions"]
-    else:
-        print(f"Failed to fetch quiz submissions: {response.status_code}")
-        # print(response.json())  # Print the error response for debugging
-        return None
-
-
-# Function to get the details of the answers given in a submission
-def get_submission_answers(course_id, quiz_id, submission_id):
-    # answers_url = (
-    #     f"{API_URL}/courses/{course_id}/quizzes/{quiz_id}/submissions/{submission_id}"
-    # )
-    answers_url = f"{API_URL}/courses/{course_id}/quizzes/{quiz_id}/submissions?include[]=submission_history"
-    # print(answers_url)
-    response = requests.get(answers_url, headers=headers)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(
-            f"Failed to fetch answers for submission_id {submission_id}: {response.status_code}"
-        )
-        # print(response.json())  # Print the error response for debugging
-        return None
+    Args:
+        course_id: A string that represents the Canvas course ID
+        quiz_id: A string that represents the Canvas quiz ID
+        report_type: A string that represents the kind of report. Can be either 'student_analysis' or 'item_analysis'
+    Returns:
+        A dictionary of the raw data from the quiz report
+    """
+    url = f"{API_URL}/courses/{course_id}/quizzes/{quiz_id}/reports"
+    payload = {"quiz_report[report_type]": report_type}
+    response = requests.post(url, headers=headers, data=payload)
+    return response.json()
 
 
-# Fetch quiz submissions
-submissions = get_quiz_submissions(COURSE_ID, QUIZ_ID)
-
-if submissions:
-    for submission in submissions:
-        submission_id = submission["submission_id"]
-        temp_id = submission["id"]
-        student_id = submission["user_id"]
-        # print("NEW SUBMISSION")
-        # print(submission_id)
-        # print(temp_id)
-        # print(student_id)
-        print("ATTEMPT")
-        answers = get_submission_answers(COURSE_ID, QUIZ_ID, temp_id)
-        print(answers)
-        # quiz_submissions = answers["quiz_submissions"]
-        # # print(quiz_submissions)
-        # for result in quiz_submissions:
-        #     for key, value in result.items():
-        #         print(f"{key}:{value}\n")
+def get_quiz_report_status(course_id, quiz_id, report_id):
+    """
+    Retrieve the quiz report and return it
+    """
+    url = f"{API_URL}/courses/{course_id}/quizzes/{quiz_id}/reports/{report_id}"
+    response = requests.get(url, headers=headers)
+    return response.json()
 
 
-# {'quiz_submissions': [{'id': 44222, 'quiz_id': 2192, 'quiz_version': 3, 'user_id': 1041, 'submission_id': 429506, 'score': 0.0, 'kept_score': 0.0, 'started_at': '2024-07-16T20:25:43Z', 'end_at': None, 'finished_at': '2024-07-16T20:29:17Z', 'attempt': 1, 'workflow_state': 'pending_review', 'fudge_points': None, 'quiz_points_possible': 3.0, 'extra_attempts': None, 'extra_time': None, 'manually_unlocked': None, 'validation_token': '3925eec2b6c8057b29e0533ca43bd53e24ca46920683f9bb3ead26227628eb29', 'score_before_regrade': None, 'has_seen_results': False, 'time_spent': 213, 'attempts_left': 0, 'overdue_and_needs_submission': False, 'excused?': False, 'html_url': 'https://canvas.olin.edu/courses/790/quizzes/2192/submissions/44222', 'result_url': 'https://canvas.olin.edu/courses/790/quizzes/2192/history?quiz_submission_id=44222&version=1'}]}
+def download_report(file_url):
+    """Download the quiz report"""
+    response = requests.get(file_url, headers=headers)
+    return response.content
 
 
-# # Check if submissions were fetched successfully
-# if submissions:
-#     # Specify the CSV file name
-#     csv_file = "quiz_answers.csv"
+def main():
+    """Main method"""
+    report_file = "quiz_report.csv"
+    report = create_quiz_report(COURSE_ID, QUIZ_ID)
+    report_id = report["id"]
 
-#     # Open the CSV file for writing
-#     with open(csv_file, mode="w", newline="") as file:
-#         writer = csv.writer(file)
+    # Poll until the report is complete
+    while True:
+        report_status = get_quiz_report_status(COURSE_ID, QUIZ_ID, report_id)
+        if report_status["file"]["upload_status"] == "success":
+            file_url = report_status["file"]["url"]
+            break
+        time.sleep(5)  # wait before polling again
 
-#         # Write the header
-#         writer.writerow(
-#             [
-#                 "Student ID",
-#                 "Submission ID",
-#                 "Question ID",
-#                 "Question Text",
-#                 "Student Answer",
-#             ]
-#         )
+    # Download the report
+    report_content = download_report(file_url)
 
-#         # Write the answers
-#         for submission in submissions:
-#             # print(submission)
-#             student_id = submission["user_id"]
-#             submission_id = submission["id"]
-#             answers = get_submission_answers(COURSE_ID, QUIZ_ID, submission_id)
+    # Save the report to a file
+    with open(report_file, "wb") as file:
+        file.write(report_content)
+    print(f"Report generated: {report_file}")
 
-#             if answers:
-#                 print("Found Submission")
-#                 for answer in answers["quiz_submission_questions"]:
-#                     question_id = answer["id"]
-#                     question_text = answer["question_text"]
-#                     student_answer = answer["answer"]
-#                     writer.writerow(
-#                         [
-#                             student_id,
-#                             submission_id,
-#                             question_id,
-#                             question_text,
-#                             student_answer,
-#                         ]
-#                     )
-#                     time.sleep(time_delay)  # To avoid hitting rate limits
-#             else:
-#                 print("No submission")
 
-#     print(f"Quiz answers have been written to {csv_file}")
-# else:
-#     print("No submissions to write.")
+if __name__ == "__main__":
+    main()
