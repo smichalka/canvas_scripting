@@ -20,6 +20,7 @@ def get_quiz_objects(course_id):
     url = f"{API_URL}/courses/{course_id}/quizzes"
     quizzes = []
 
+    # Handle pagination so we can get all the quizzes
     while url:
         response = requests.get(url, headers=headers)
         response.raise_for_status()  # Raise an exception for HTTP errors
@@ -54,7 +55,6 @@ def get_homework_surveys_ids(quiz_objects):
     for quiz in quiz_objects:
         quiz_id = quiz["id"]
         quiz_name = quiz["title"]
-        # print(quiz_name)
         if "Homework" in quiz_name and "Survey" in quiz_name:
             homework_surveys[quiz_id] = quiz_name
     return homework_surveys
@@ -116,88 +116,111 @@ def get_survey_csvs(quiz_objects):
     """Get homework survey student reports and download csv"""
     surveys = get_homework_surveys_ids(quiz_objects)
     consolidated_data = []
-    headers = None
+    table_headers = None
 
     for quiz_id, title in surveys.items():
-        # report_file = f"{title}.csv"
-        report = create_quiz_report(COURSE_ID, quiz_id)
-        time.sleep(1)
-        report_id = report["id"]
+        if "6" in title:  ### SUPER TEMPORARY - CREATE ONE DASHBOARD FOR NOW
+            # report_file = f"{title}.csv"
+            report = create_quiz_report(COURSE_ID, quiz_id)
+            time.sleep(1)
+            report_id = report["id"]
 
-        # Poll until the report is complete
-        while True:
-            report_status = get_quiz_report_status(COURSE_ID, quiz_id, report_id)
-            # print(report_status)
-            if "file" in report_status:
-                if report_status["file"]["upload_status"] == "success":
-                    file_url = report_status["file"]["url"]
-                    break
-            time.sleep(5)  # wait before polling again
+            # Poll until the report is complete
+            while True:
+                report_status = get_quiz_report_status(COURSE_ID, quiz_id, report_id)
+                # print(report_status)
+                if "file" in report_status:
+                    if report_status["file"]["upload_status"] == "success":
+                        file_url = report_status["file"]["url"]
+                        break
+                time.sleep(5)  # wait before polling again
 
-        # Download the report
-        report_content = download_report(file_url)
-        time.sleep(1)
+            # Download the report
+            report_content = download_report(file_url)
+            time.sleep(1)
 
-        # Read the report content and add it to the consolidated data
-        report_lines = report_content.decode("utf-8").splitlines()
-        report_reader = csv.reader(report_lines)
-        report_data = list(report_reader)
+            # Save the report to a file
+            report_file = f"{title}.csv"
+            with open(report_file, "wb") as file:
+                file.write(report_content)
+            print(f"Report generated: {report_file}")
+            time.sleep(1)
 
-        if headers is None:
-            headers = report_data[0] + ["Survey Title"]
-            consolidated_data.append(headers)
+    ############# PUT EVERYTHING IN ONE CSV ##################################
+    #     # Read the report content and add it to the consolidated data
+    #     report_lines = report_content.decode("utf-8").splitlines()
+    #     report_reader = csv.reader(report_lines)
+    #     report_data = list(report_reader)
 
-        for row in report_data[1:]:
-            row.append(title)
-            consolidated_data.append(row)
+    #     if table_headers is None:
+    #         table_headers = report_data[0] + ["Survey Title"]
+    #         consolidated_data.append(table_headers)
 
-        print(f"Report processed: {title}")
+    #     for row in report_data[1:]:
+    #         row.append(title)
+    #         consolidated_data.append(row)
 
-    with open("consolidated_survey_reports.csv", "w", newline="") as consolidated_file:
-        writer = csv.writer(consolidated_file)
-        writer.writerows(consolidated_data)
-    print("Consolidated report generated: consolidated_survey_reports.csv")
+    #     print(f"Report processed: {title}")
 
-    # # Save the report to a file
-    # with open(report_file, "wb") as file:
-    #     file.write(report_content)
-    # print(f"Report generated: {report_file}")
-    # time.sleep(1)
+    # # Write consolidated data to a csv file
+    # with open("consolidated_survey_reports.csv", "w", newline="") as consolidated_file:
+    #     writer = csv.writer(consolidated_file)
+    #     writer.writerows(consolidated_data)
+    # print("Consolidated report generated: consolidated_survey_reports.csv")
 
 
-def get_quiz_csvs(quiz_objects):
-    """Get homework quiz student reports and download csv"""
+def get_quiz_csvs(course_id, quiz_id, csv_file):
+    ###### Might require pagination handling? Need more students to be sure ###########
+    """
+    Use requests to get student grades on a specific assignment
+    If there are no grades/responses to a quiz it will not create a csv
 
-    quizzes = get_homework_quizzes_ids(quiz_objects)
-    for quiz_id, title in quizzes.items():
-        report_file = f"{title}.csv"
-        report = create_quiz_report(COURSE_ID, quiz_id)
-        time.sleep(1)
-        report_id = report["id"]
+    Args:
+        course_id: String that represents the Canvas course ID
+        quiz_id: String that represents the Canvas quiz ID
+    """
+    grades_url = f"{API_URL}/courses/{course_id}/quizzes/{quiz_id}/submissions"
+    response = requests.get(grades_url, headers=headers)
 
-        # Poll until the report is complete
-        while True:
-            report_status = get_quiz_report_status(COURSE_ID, quiz_id, report_id)
-            # print(report_status)
-            if "file" in report_status:
-                if report_status["file"]["upload_status"] == "success":
-                    file_url = report_status["file"]["url"]
-                    break
-            time.sleep(5)  # wait before polling again
+    if response.status_code == 200:
+        grades = response.json()
+        grades = grades["quiz_submissions"]
+    else:
+        print(f"Failed to fetch grades: {response.status_code}")
+        grades = None
 
-        # Download the report
-        report_content = download_report(file_url)
+    # Check if grades were fetched successfully
+    if grades:
 
-        # Save the report to a file
-        with open(report_file, "wb") as file:
-            file.write(report_content)
-        print(f"Report generated: {report_file}")
-        time.sleep(1)
+        # Open the CSV file for writing
+        with open(csv_file, mode="w", newline="") as file:
+            writer = csv.writer(file)
+
+            # Write the header
+            writer.writerow(["id", "Quiz Grade"])
+
+            # Write the grades
+            for grade in grades:
+                student_id = grade["user_id"]
+                score = grade["score"]
+                total_points = grade["quiz_points_possible"]
+                grade_value = round(score / total_points, 2) * 100
+                writer.writerow([student_id, grade_value])
+
+        print(f"Grades have been written to {csv_file}")
+    else:
+        print(f"No grades to write for {csv_file}.")
 
 
 def main():
     """Main method"""
     all_quizzes = get_quiz_objects(COURSE_ID)
+    quiz_ids = get_homework_quizzes_ids(all_quizzes)
+    for quiz_id, title in quiz_ids.items():
+        if "6" in title:  ### SUPER TEMPORARY - CREATE ONE DASHBOARD FOR NOW
+            csv_name = f"{title}.csv"
+            get_quiz_csvs(COURSE_ID, quiz_id, csv_name)
+            time.sleep(1)
     get_survey_csvs(all_quizzes)
     # get_quiz_csvs(all_quizzes)
 
