@@ -1,6 +1,7 @@
 import requests
 import time
 import csv
+import os
 from secret_constants import API_TOKEN, API_URL, COURSE_ID
 
 headers = {"Authorization": f"Bearer {API_TOKEN}"}
@@ -115,11 +116,11 @@ def download_report(file_url):
 def get_survey_csvs(quiz_objects):
     """Get homework survey student reports and download csv"""
     surveys = get_homework_surveys_ids(quiz_objects)
-    consolidated_data = []
-    table_headers = None
 
     for quiz_id, title in surveys.items():
-        if "6" in title:  ### SUPER TEMPORARY - CREATE ONE DASHBOARD FOR NOW
+        assignment_num = [int(s) for s in title.split() if s.isdigit()][0]
+        quiz_file_path = f"Homework {assignment_num} Quiz.csv"
+        if os.path.exists(quiz_file_path) and os.path.isfile(quiz_file_path):
             # report_file = f"{title}.csv"
             report = create_quiz_report(COURSE_ID, quiz_id)
             time.sleep(1)
@@ -145,28 +146,8 @@ def get_survey_csvs(quiz_objects):
                 file.write(report_content)
             print(f"Report generated: {report_file}")
             time.sleep(1)
-
-    ############# PUT EVERYTHING IN ONE CSV ##################################
-    #     # Read the report content and add it to the consolidated data
-    #     report_lines = report_content.decode("utf-8").splitlines()
-    #     report_reader = csv.reader(report_lines)
-    #     report_data = list(report_reader)
-
-    #     if table_headers is None:
-    #         table_headers = report_data[0] + ["Survey Title"]
-    #         consolidated_data.append(table_headers)
-
-    #     for row in report_data[1:]:
-    #         row.append(title)
-    #         consolidated_data.append(row)
-
-    #     print(f"Report processed: {title}")
-
-    # # Write consolidated data to a csv file
-    # with open("consolidated_survey_reports.csv", "w", newline="") as consolidated_file:
-    #     writer = csv.writer(consolidated_file)
-    #     writer.writerows(consolidated_data)
-    # print("Consolidated report generated: consolidated_survey_reports.csv")
+        else:
+            print(f"No matching Quiz for Homework {assignment_num}")
 
 
 def get_quiz_csvs(course_id, quiz_id, csv_file):
@@ -217,12 +198,10 @@ def main():
     all_quizzes = get_quiz_objects(COURSE_ID)
     quiz_ids = get_homework_quizzes_ids(all_quizzes)
     for quiz_id, title in quiz_ids.items():
-        if "6" in title:  ### SUPER TEMPORARY - CREATE ONE DASHBOARD FOR NOW
-            csv_name = f"{title}.csv"
-            get_quiz_csvs(COURSE_ID, quiz_id, csv_name)
-            time.sleep(1)
+        csv_name = f"{title}.csv"
+        get_quiz_csvs(COURSE_ID, quiz_id, csv_name)
+        time.sleep(1)
     get_survey_csvs(all_quizzes)
-    # get_quiz_csvs(all_quizzes)
 
 
 if __name__ == "__main__":
