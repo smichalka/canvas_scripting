@@ -1,5 +1,4 @@
-import pandas as pd
-from pathlib import Path
+import pandas as pd  # pylint: disable=import-error
 import os
 
 DIRECTORY_PATH = "."
@@ -76,7 +75,7 @@ def remove_csv(file):
     """Remove input file (if it exists) from directory"""
     if os.path.exists(file) and os.path.isfile(file):
         os.remove(file)
-        print("file deleted")
+        # print("file deleted")
     else:
         print("file not found")
 
@@ -86,8 +85,7 @@ def create_assignment_reports():
     for homework_path, file_paths in homework_dict.items():
         quiz_path = file_paths[0]
         survey_path = file_paths[1]
-        quiz_file = Path(quiz_path)
-        if quiz_file.is_file():
+        if os.path.exists(quiz_path) and os.path.isfile(quiz_path):
             process_reports_with_quiz(quiz_path, survey_path, homework_path)
             remove_csv(quiz_path)
             remove_csv(survey_path)
@@ -104,9 +102,11 @@ def concatenate_csvs(directory_path, final_csv):
             # Read the CSV file
             df = pd.read_csv(file_path)
             # Add a new column with the filename
-            df["Assignment"] = filename
+            assignment_name = filename[:-4]
+            df["Assignment"] = assignment_name
             # Append the dataframe to the list
             df_list.append(df)
+            remove_csv(filename)
 
     # Concatenate all dataframes in the list
     combined_df = pd.concat(df_list, ignore_index=True)
@@ -125,8 +125,14 @@ def undo_dates(file):
     reports.to_csv(file, index=False)
 
 
-create_assignment_reports()
-report_csv = "Consolidated Reports.csv"
-remove_csv(report_csv)
-concatenate_csvs(DIRECTORY_PATH, report_csv)
-undo_dates(report_csv)
+def main():
+    """Main method"""
+    create_assignment_reports()
+    report_csv = "Consolidated Reports.csv"
+    remove_csv(report_csv)
+    concatenate_csvs(DIRECTORY_PATH, report_csv)
+    undo_dates(report_csv)
+
+
+if __name__ == "__main__":
+    main()
