@@ -113,7 +113,20 @@ def concatenate_csvs(directory_path, final_csv):
     combined_df.to_csv(final_csv, index=False)
 
 
+def un_dateify(date):
+    return "'" + date
+
+
+def undo_dates(file):
+    reports = pd.read_csv(file)
+    col = 6  # Column that numbers are in
+    col_name = reports.columns[col]
+    reports[col_name] = reports[col_name].apply(un_dateify)
+    reports.to_csv(file, index=False)
+
+
 create_assignment_reports()
 report_csv = "combined reports.csv"
 remove_csv(report_csv)
 concatenate_csvs(DIRECTORY_PATH, report_csv)
+undo_dates(report_csv)
