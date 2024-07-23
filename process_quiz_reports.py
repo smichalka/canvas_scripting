@@ -126,7 +126,7 @@ def undo_dates(file):
 
 
 create_assignment_reports()
-report_csv = "combined reports.csv"
+report_csv = "Consolidated Reports.csv"
 remove_csv(report_csv)
 concatenate_csvs(DIRECTORY_PATH, report_csv)
 undo_dates(report_csv)
