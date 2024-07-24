@@ -144,11 +144,34 @@ def undo_dates(file):
     reports.to_csv(file, index=False)
 
 
+def survey_to_txt(csv_file):
+    # Col 3
+    report = pd.read_csv(csv_file)
+    responses = report.iloc[:, 3]
+    assignment_name = csv_file[:-4]
+    txt_file_name = f"{assignment_name}.txt"
+
+    with open(txt_file_name, "w") as file:
+        for response in responses:
+            file.write(f"{response} ;;; ")
+
+
+def get_all_survey_txt(directory_path):
+    for filename in os.listdir(directory_path):
+        if filename.endswith(".csv"):
+            file_path = os.path.join(directory_path, filename)
+            survey_to_txt(file_path)
+            print("Text file created")
+
+
 def main():
     """Main method"""
     create_assignment_reports()
     report_csv = "Consolidated Reports.csv"
     remove_csv(report_csv)
+    # get text from survey responses for gpt handling
+    get_all_survey_txt(DIRECTORY_PATH)
+    # consolidate all csvs
     concatenate_csvs(DIRECTORY_PATH, report_csv)
     undo_dates(report_csv)
 
