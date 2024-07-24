@@ -1,7 +1,7 @@
 import pandas as pd  # pylint: disable=import-error
 import os
 
-DIRECTORY_PATH = "."
+DIRECTORY_PATH = "."  # just looking in current directory
 homework_dict = {
     "Homework 1.csv": ["Homework 1 Quiz.csv", "Homework 1 Survey.csv"],
     "Homework 2.csv": ["Homework 2 Quiz.csv", "Homework 2 Survey.csv"],
@@ -72,7 +72,12 @@ def process_reports_with_quiz(quiz_csv, survey_csv, combined_csv):
 
 
 def remove_csv(file):
-    """Remove input file (if it exists) from directory"""
+    """
+    Remove input file (if it exists) from directory
+
+    Args:
+        file: a String that represents the file to be removed
+    """
     if os.path.exists(file) and os.path.isfile(file):
         os.remove(file)
         # print("file deleted")
@@ -92,6 +97,13 @@ def create_assignment_reports():
 
 
 def concatenate_csvs(directory_path, final_csv):
+    """
+    Takes all the assignment reports and consolidates them into one final csv
+
+    Args:
+        directory_path: A String representing the directory the assignment reports are in
+        final_csv: A String that is the name of the csv for the consolidated reports; must end with .csv
+    """
     # List to hold dataframes
     df_list = []
 
@@ -114,10 +126,17 @@ def concatenate_csvs(directory_path, final_csv):
 
 
 def un_dateify(date):
+    """Add an apostrophe before a value that would be interpreted as a date by Excel"""
     return "'" + date
 
 
 def undo_dates(file):
+    """
+    Edit values in the consolidated report that would be viewed as dates by Excel
+
+    Args:
+        file: A string representing the file name of consolidated assignment reports; must end with .csv
+    """
     reports = pd.read_csv(file)
     col = 6  # Column that numbers are in
     col_name = reports.columns[col]

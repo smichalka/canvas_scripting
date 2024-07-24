@@ -114,7 +114,12 @@ def download_report(file_url):
 
 
 def get_survey_csvs(quiz_objects):
-    """Get homework survey student reports and download csv"""
+    """
+    Get homework survey student reports and download csv
+
+    Args:
+        quiz_objects - A list containing a list of Quiz objects, represented as dictionaries; returned by `get_quiz_objects`
+    """
     surveys = get_homework_surveys_ids(quiz_objects)
 
     for quiz_id, title in surveys.items():
@@ -152,6 +157,7 @@ def get_survey_csvs(quiz_objects):
 
 def get_quiz_csvs(course_id, quiz_id, csv_file):
     ###### Might require pagination handling? Need more students to be sure ###########
+    ###### See `get_quiz_objects` for pagination implementation
     """
     Use requests to get student grades on a specific assignment
     If there are no grades/responses to a quiz it will not create a csv
