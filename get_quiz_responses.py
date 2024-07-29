@@ -149,10 +149,10 @@ def get_survey_csvs(quiz_objects):
             report_file = f"{title}.csv"
             with open(report_file, "wb") as file:
                 file.write(report_content)
-            print(f"Report generated: {report_file}")
+            # print(f"Report generated: {report_file}")
             time.sleep(1)
-        else:
-            print(f"No matching Quiz for Homework {assignment_num}")
+        # else:
+        #     print(f"No matching Quiz for Homework {assignment_num}")
 
 
 def get_quiz_csvs(course_id, quiz_id, csv_file):
@@ -194,9 +194,9 @@ def get_quiz_csvs(course_id, quiz_id, csv_file):
                 grade_value = round(score / total_points, 2) * 100
                 writer.writerow([student_id, grade_value])
 
-        print(f"Grades have been written to {csv_file}")
-    else:
-        print(f"No grades to write for {csv_file}.")
+        # print(f"Grades have been written to {csv_file}")
+    # else:
+    #     print(f"No grades to write for {csv_file}.")
 
 
 def main():

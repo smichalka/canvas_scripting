@@ -81,16 +81,21 @@ def store_response(csv_name, survey_responses):
     summaries.loc[len(summaries)] = [assignment_name, gpt_output]
 
     summaries.to_csv(csv_name, index=False)
-    print(f"The response has been saved to {csv_name}")
+    # print(f"The response has been saved to {csv_name}")
 
 
-initialize_csv(GPT_OUTPUT_CSV)
-for filename in os.listdir("."):
-    if (
-        filename.endswith(".txt")
-        and filename != "requirements.txt"
-        and filename != "prompt.txt"
-    ):
-        store_response(GPT_OUTPUT_CSV, filename)
-        os.remove(filename)
-        time.sleep(1)
+def main():
+    initialize_csv(GPT_OUTPUT_CSV)
+    for filename in os.listdir("."):
+        if (
+            filename.endswith(".txt")
+            and filename != "requirements.txt"
+            and filename != "prompt.txt"
+        ):
+            store_response(GPT_OUTPUT_CSV, filename)
+            os.remove(filename)
+            time.sleep(1)
+
+
+if __name__ == "__main__":
+    main()

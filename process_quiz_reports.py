@@ -34,14 +34,14 @@ def process_reports_with_quiz(quiz_csv, survey_csv, combined_csv):
     found = False
     for report_num in extra_question:
         if report_num in quiz_csv:
-            print("Report 1-5")
+            # print("Report 1-5")
             dropped_columns = (
                 list(range(2, 7)) + (list(range(8, 15, 2))) + list(range(16, 22))
             )
             found = True
             break
         elif "3" in quiz_csv:
-            print("Report 3")
+            # print("Report 3")
             dropped_columns = (
                 list(range(2, 7))
                 + (list(range(8, 13, 2)))
@@ -52,7 +52,7 @@ def process_reports_with_quiz(quiz_csv, survey_csv, combined_csv):
             found = True
             break
     if not found:
-        print("Report 6-10")
+        # print("Report 6-10")
         dropped_columns = (
             list(range(2, 7)) + (list(range(8, 17, 2))) + list(range(17, 20))
         )
@@ -65,11 +65,11 @@ def process_reports_with_quiz(quiz_csv, survey_csv, combined_csv):
         # remove ID
         new_content = "".join([i for i in old_content if not i.isdigit()])[2:]
         survey = survey.rename(columns={old_content: new_content})
-    print("Reformatted Successfully")
+    # print("Reformatted Successfully")
 
     merged_df = pd.merge(survey, quiz, on="id", how="inner")
     merged_df.to_csv(combined_csv, index=False)
-    print(f"{survey_csv} merge complete")
+    # print(f"{survey_csv} merge complete")
 
 
 def remove_csv(file):
@@ -159,7 +159,7 @@ def get_all_survey_txt(directory_path):
         if filename.endswith(".csv") and filename != "Summaries.csv":
             file_path = os.path.join(directory_path, filename)
             survey_to_txt(file_path)
-            print("Text file created")
+            # print("Text file created")
 
 
 def main():
