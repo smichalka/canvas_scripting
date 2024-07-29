@@ -2,7 +2,7 @@ import requests
 import time
 import csv
 import os
-from secret_constants import API_TOKEN, API_URL, COURSE_ID
+from constants import API_TOKEN, API_URL, COURSE_ID
 
 headers = {"Authorization": f"Bearer {API_TOKEN}"}
 

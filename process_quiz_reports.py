@@ -1,5 +1,6 @@
 import pandas as pd  # pylint: disable=import-error
 import os
+from constants import STUDENT_REPORT_CSV
 
 DIRECTORY_PATH = "."  # just looking in current directory
 homework_dict = {
@@ -109,7 +110,7 @@ def concatenate_csvs(directory_path, final_csv):
 
     # Iterate over all files in the directory
     for filename in os.listdir(directory_path):
-        if filename.endswith(".csv"):
+        if filename.endswith(".csv") and filename != "Summaries.csv":
             file_path = os.path.join(directory_path, filename)
             # Read the CSV file
             df = pd.read_csv(file_path)
@@ -125,29 +126,26 @@ def concatenate_csvs(directory_path, final_csv):
     combined_df.to_csv(final_csv, index=False)
 
 
-def un_dateify(date):
-    """Add an apostrophe before a value that would be interpreted as a date by Excel"""
-    return "'" + date
-
-
-def undo_dates(file):
-    """
-    Edit values in the consolidated report that would be viewed as dates by Excel
-
-    Args:
-        file: A string representing the file name of consolidated assignment reports; must end with .csv
-    """
-    reports = pd.read_csv(file)
-    col = 6  # Column that numbers are in
-    col_name = reports.columns[col]
-    reports[col_name] = reports[col_name].apply(un_dateify)
-    reports.to_csv(file, index=False)
-
-
 def survey_to_txt(csv_file):
     # Col 3
     report = pd.read_csv(csv_file)
-    responses = report.iloc[:, 3]
+    # responses = report.iloc[:, 3]
+    if (
+        "Please detail any concepts or technical content you are still confused by or something you found interesting to learn."
+        in report.columns
+    ):
+        responses = report[
+            "Please detail any concepts or technical content you are still confused by or something you found interesting to learn."
+        ]
+    elif (
+        "Please summarize the contents of this homework and detail any concepts or technical content you are still confused by."
+        in report.columns
+    ):
+        responses = report[
+            "Please summarize the contents of this homework and detail any concepts or technical content you are still confused by."
+        ]
+    else:
+        responses = [""]
     assignment_name = csv_file[:-4]
     txt_file_name = f"{assignment_name}.txt"
 
@@ -158,7 +156,7 @@ def survey_to_txt(csv_file):
 
 def get_all_survey_txt(directory_path):
     for filename in os.listdir(directory_path):
-        if filename.endswith(".csv"):
+        if filename.endswith(".csv") and filename != "Summaries.csv":
             file_path = os.path.join(directory_path, filename)
             survey_to_txt(file_path)
             print("Text file created")
@@ -167,13 +165,11 @@ def get_all_survey_txt(directory_path):
 def main():
     """Main method"""
     create_assignment_reports()
-    report_csv = "Consolidated Reports.csv"
-    remove_csv(report_csv)
+    remove_csv(STUDENT_REPORT_CSV)
     # get text from survey responses for gpt handling
     get_all_survey_txt(DIRECTORY_PATH)
     # consolidate all csvs
-    concatenate_csvs(DIRECTORY_PATH, report_csv)
-    undo_dates(report_csv)
+    concatenate_csvs(DIRECTORY_PATH, STUDENT_REPORT_CSV)
 
 
 if __name__ == "__main__":

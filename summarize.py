@@ -1,16 +1,23 @@
-from secret_constants import AZURE_TOKEN, AZURE_ENDPOINT
+from constants import (
+    AZURE_TOKEN,
+    AZURE_ENDPOINT,
+    GPT_OUTPUT_CSV,
+    AZURE_DEPLOYMENT_NAME,
+    AZURE_API_VERSION,
+)
 import requests
 import csv
 import pandas as pd  # pylint: disable=import-error
 import os
+import time
 
 headers = {
     "Content-Type": "application/json",
     "api-key": AZURE_TOKEN,
 }
 
-deployment_name = "QEA_Processing"
-api_version = "2024-02-15"
+deployment_name = AZURE_DEPLOYMENT_NAME
+api_version = AZURE_API_VERSION
 
 
 def get_summary(assignment_responses):
@@ -77,13 +84,13 @@ def store_response(csv_name, survey_responses):
     print(f"The response has been saved to {csv_name}")
 
 
-summary_csv = "Summaries.csv"
-initialize_csv(summary_csv)
+initialize_csv(GPT_OUTPUT_CSV)
 for filename in os.listdir("."):
     if (
         filename.endswith(".txt")
         and filename != "requirements.txt"
         and filename != "prompt.txt"
     ):
-        store_response(summary_csv, filename)
+        store_response(GPT_OUTPUT_CSV, filename)
         os.remove(filename)
+        time.sleep(1)
