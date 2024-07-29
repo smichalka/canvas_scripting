@@ -2,9 +2,9 @@ import requests
 import time
 import csv
 import os
-from constants import API_TOKEN, API_URL, COURSE_ID
+from constants import CANVAS_API_TOKEN, CANVAS_API_URL, COURSE_ID
 
-headers = {"Authorization": f"Bearer {API_TOKEN}"}
+headers = {"Authorization": f"Bearer {CANVAS_API_TOKEN}"}
 
 
 def get_quiz_objects(course_id):
@@ -18,7 +18,7 @@ def get_quiz_objects(course_id):
         A list containing a list of Quiz objects, represented as dictionaries
     """
 
-    url = f"{API_URL}/courses/{course_id}/quizzes"
+    url = f"{CANVAS_API_URL}/courses/{course_id}/quizzes"
     quizzes = []
 
     # Handle pagination so we can get all the quizzes
@@ -92,7 +92,7 @@ def create_quiz_report(course_id, quiz_id, report_type="student_analysis"):
     Returns:
         A dictionary of the raw data from the quiz report
     """
-    url = f"{API_URL}/courses/{course_id}/quizzes/{quiz_id}/reports"
+    url = f"{CANVAS_API_URL}/courses/{course_id}/quizzes/{quiz_id}/reports"
     payload = {"quiz_report[report_type]": report_type}
     response = requests.post(url, headers=headers, data=payload)
     return response.json()
@@ -102,7 +102,7 @@ def get_quiz_report_status(course_id, quiz_id, report_id):
     """
     Retrieve the quiz report and return it
     """
-    url = f"{API_URL}/courses/{course_id}/quizzes/{quiz_id}/reports/{report_id}"
+    url = f"{CANVAS_API_URL}/courses/{course_id}/quizzes/{quiz_id}/reports/{report_id}"
     response = requests.get(url, headers=headers)
     return response.json()
 
@@ -166,7 +166,7 @@ def get_quiz_csvs(course_id, quiz_id, csv_file):
         course_id: String that represents the Canvas course ID
         quiz_id: String that represents the Canvas quiz ID
     """
-    grades_url = f"{API_URL}/courses/{course_id}/quizzes/{quiz_id}/submissions"
+    grades_url = f"{CANVAS_API_URL}/courses/{course_id}/quizzes/{quiz_id}/submissions"
     response = requests.get(grades_url, headers=headers)
 
     if response.status_code == 200:
