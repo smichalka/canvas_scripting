@@ -2,4 +2,5 @@ Please summarize the following survey responses for me. The survey responses are
 The question the students are answering are " Please summarize the contents of this homework and detail any concepts or technical content you are still confused by. "
 Place more emphasis on topics that come up repeatedly about any concepts or technical content that students are still confused by. 
 The information should be presented in a way that is useful for a professor to look at and gain an understanding of where students need more help.
-The survey responses are as follows. Individual responses are separated by three semicolons (;;;).
+The survey responses are as follows. Individual responses are separated by three semicolons (;;;). If there are less than three responses, 
+or there is not enough data to provide a good response, please say that and don't attempt to create your own repsponse/summary.
