@@ -4,6 +4,7 @@ import summarize
 
 
 def main():
+    """Main Method"""
     get_quiz_responses.main()
     process_quiz_reports.main()
     summarize.main()

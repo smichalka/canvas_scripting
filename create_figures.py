@@ -327,5 +327,12 @@ def average_assignment_vs_time(summaries, ax):
 
 
 def get_summary(gpt_summaries, assignment_name):
+    """
+    Get a specific assignment summary from gpt_summaries
+
+    Args:
+        gpt_summares: a dataframe of GPT_OUTPUT_CSV
+        assignment: the name of the assignment you want a summary of
+    """
     assignment_summary = gpt_summaries[gpt_summaries["Assignment"] == assignment_name]
     return assignment_summary["Summary"].values[0]

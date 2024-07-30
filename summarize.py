@@ -22,8 +22,13 @@ api_version = AZURE_API_VERSION
 
 def get_summary(assignment_responses):
     """
+    Create a GPT-generated summary of where students struggled based on survey responses
+
     Args:
-        assignment_responses: a txt file that has all those responses saved
+        assignment_responses: a txt file that has all student responses responses saved for a specific assignment
+
+    Returns:
+        gtp_output: A string that contains that summary gpt generated
     """
     # Open the file in read mode ('r') and read its contents
     with open("prompt.txt", "r") as file:
@@ -59,6 +64,9 @@ def get_summary(assignment_responses):
 def initialize_csv(csv_name):
     """
     Create a csv to save summaries to with assignment name
+
+    Args:
+        csv_name: A string that is the name of the csv being created
     """
     with open(csv_name, mode="w", newline="") as file:
         writer = csv.writer(file)
@@ -81,10 +89,10 @@ def store_response(csv_name, survey_responses):
     summaries.loc[len(summaries)] = [assignment_name, gpt_output]
 
     summaries.to_csv(csv_name, index=False)
-    # print(f"The response has been saved to {csv_name}")
 
 
 def main():
+    """Go through all assignment txt files and add summary to GPT_OUTPUT_CSV"""
     initialize_csv(GPT_OUTPUT_CSV)
     for filename in os.listdir("."):
         if (

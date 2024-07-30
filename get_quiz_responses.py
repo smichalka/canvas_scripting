@@ -126,7 +126,6 @@ def get_survey_csvs(quiz_objects):
         assignment_num = [int(s) for s in title.split() if s.isdigit()][0]
         quiz_file_path = f"Homework {assignment_num} Quiz.csv"
         if os.path.exists(quiz_file_path) and os.path.isfile(quiz_file_path):
-            # report_file = f"{title}.csv"
             report = create_quiz_report(COURSE_ID, quiz_id)
             time.sleep(1)
             report_id = report["id"]
@@ -134,7 +133,6 @@ def get_survey_csvs(quiz_objects):
             # Poll until the report is complete
             while True:
                 report_status = get_quiz_report_status(COURSE_ID, quiz_id, report_id)
-                # print(report_status)
                 if "file" in report_status:
                     if report_status["file"]["upload_status"] == "success":
                         file_url = report_status["file"]["url"]
@@ -149,10 +147,7 @@ def get_survey_csvs(quiz_objects):
             report_file = f"{title}.csv"
             with open(report_file, "wb") as file:
                 file.write(report_content)
-            # print(f"Report generated: {report_file}")
             time.sleep(1)
-        # else:
-        #     print(f"No matching Quiz for Homework {assignment_num}")
 
 
 def get_quiz_csvs(course_id, quiz_id, csv_file):
@@ -193,10 +188,6 @@ def get_quiz_csvs(course_id, quiz_id, csv_file):
                 total_points = grade["quiz_points_possible"]
                 grade_value = round(score / total_points, 2) * 100
                 writer.writerow([student_id, grade_value])
-
-        # print(f"Grades have been written to {csv_file}")
-    # else:
-    #     print(f"No grades to write for {csv_file}.")
 
 
 def main():

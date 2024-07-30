@@ -34,14 +34,12 @@ def process_reports_with_quiz(quiz_csv, survey_csv, combined_csv):
     found = False
     for report_num in extra_question:
         if report_num in quiz_csv:
-            # print("Report 1-5")
             dropped_columns = (
                 list(range(2, 7)) + (list(range(8, 15, 2))) + list(range(16, 22))
             )
             found = True
             break
         elif "3" in quiz_csv:
-            # print("Report 3")
             dropped_columns = (
                 list(range(2, 7))
                 + (list(range(8, 13, 2)))
@@ -52,7 +50,6 @@ def process_reports_with_quiz(quiz_csv, survey_csv, combined_csv):
             found = True
             break
     if not found:
-        # print("Report 6-10")
         dropped_columns = (
             list(range(2, 7)) + (list(range(8, 17, 2))) + list(range(17, 20))
         )
@@ -65,11 +62,9 @@ def process_reports_with_quiz(quiz_csv, survey_csv, combined_csv):
         # remove ID
         new_content = "".join([i for i in old_content if not i.isdigit()])[2:]
         survey = survey.rename(columns={old_content: new_content})
-    # print("Reformatted Successfully")
 
     merged_df = pd.merge(survey, quiz, on="id", how="inner")
     merged_df.to_csv(combined_csv, index=False)
-    # print(f"{survey_csv} merge complete")
 
 
 def remove_csv(file):
@@ -81,7 +76,6 @@ def remove_csv(file):
     """
     if os.path.exists(file) and os.path.isfile(file):
         os.remove(file)
-        # print("file deleted")
     else:
         print("file not found")
 
@@ -127,9 +121,13 @@ def concatenate_csvs(directory_path, final_csv):
 
 
 def survey_to_txt(csv_file):
-    # Col 3
+    """
+    Convert survey responses for question asking where students struggled to txt file
+
+    Args:
+        csv_file: A String representing the name of the csv file that contains the survey responses
+    """
     report = pd.read_csv(csv_file)
-    # responses = report.iloc[:, 3]
     if (
         "Please detail any concepts or technical content you are still confused by or something you found interesting to learn."
         in report.columns
@@ -155,11 +153,16 @@ def survey_to_txt(csv_file):
 
 
 def get_all_survey_txt(directory_path):
+    """
+    Get all the survey responses for question asking where students struggled and convert them to txt files
+
+    Args:
+        directory_path: A string representing the directory that we're looking for files in
+    """
     for filename in os.listdir(directory_path):
         if filename.endswith(".csv") and filename != "Summaries.csv":
             file_path = os.path.join(directory_path, filename)
             survey_to_txt(file_path)
-            # print("Text file created")
 
 
 def main():
