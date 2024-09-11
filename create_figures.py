@@ -1,5 +1,6 @@
 import pandas as pd  # pylint: disable=import-error
-import matplotlib.pyplot as plt  # pylint: disable=import-error
+
+import matplotlib as plt  # pylint: disable=import-error
 
 
 def create_dataframe(csv_path):
@@ -19,7 +20,7 @@ def student_vs_score(summaries, assignment_name, ax):
 
     Args:
         assignment_name: String representing the name of the assignment being graphed
-        summares: dataframe that contains all the Canvas data
+        summaries: dataframe that contains all the Canvas data
         ax: a Pandas axes
     """
 
